@@ -161,7 +161,7 @@ local function showKeyUI(callback)
         local valid = false
         for line in raw:gmatch("[^\n\r]+") do
             local trimmed = line:match("^%s*(.-)%s*$")
-            if trimmed ~= "" and not trimmed:sub(1,1) == "#" and trimmed == key then
+            if trimmed ~= "" and trimmed:sub(1,1) ~= "#" and trimmed == key then
                 valid = true; break
             end
         end
