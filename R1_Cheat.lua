@@ -7,7 +7,7 @@
 -- ============================================================
 -- CONFIG — เปลี่ยน URL นี้หลัง upload GitHub
 -- ============================================================
-local KEYS_URL  = "https://raw.githubusercontent.com/boombadah/r1-scripts/main/keys.txt"
+local KEYS_URL  = "https://raw.githubusercontent.com/boombadah/r1-scripts/refs/heads/main/keys.txt"
 local CHEAT_VER = "v1.0"
 
 -- ============================================================
