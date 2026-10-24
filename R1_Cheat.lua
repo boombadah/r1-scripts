@@ -20,8 +20,9 @@ local TweenSvc   = game:GetService("TweenService")
 local cam        = workspace.CurrentCamera
 local lp         = Players.LocalPlayer
 
-if game.PlaceId ~= 75942174630781 then
-    warn("[R1] Wrong game!")
+local VALID_PLACES = {[75942174630781]=true, [114690486941238]=true}
+if not VALID_PLACES[game.PlaceId] then
+    warn("[R1] Wrong game! PlaceId=" .. game.PlaceId)
     return
 end
 
@@ -420,8 +421,30 @@ local function loadCheat()
 end
 
 -- ============================================================
--- ENTRY POINT
+-- ENTRY POINT — session persistence via getgenv()
 -- ============================================================
-showKeyUI(function(ok)
-    if ok then loadCheat() end
-end)
+local function startCheat()
+    loadCheat()
+    -- auto-restart ESP on CharacterAdded (new match, respawn)
+    lp.CharacterAdded:Connect(function()
+        task.wait(1) -- wait for workspace to populate
+        -- rebuild entry cache for new match
+        for _, e in ipairs(getgenv().R1_entries or {}) do
+            for _, d in pairs(e.dr) do pcall(function() d:Remove() end) end
+        end
+        loadCheat()
+    end)
+end
+
+if getgenv().R1_VALIDATED then
+    -- already validated this session — skip key UI
+    print("[R1 Cheat] Session active — skipping key")
+    startCheat()
+else
+    showKeyUI(function(ok)
+        if ok then
+            getgenv().R1_VALIDATED = true
+            startCheat()
+        end
+    end)
+end
