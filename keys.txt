@@ -1,0 +1,11 @@
+-- ============================================================
+--  keys.txt  |  R1 Cheat key list
+--  1 key per line, lines starting with # are comments
+--  cook45
+-- ============================================================
+# Add/remove keys here. Save file to update immediately.
+# Format: R1-XXXX-XXXX (any string works)
+
+R1-BOOM-0001
+R1-FRND-0002
+R1-FRND-0003
