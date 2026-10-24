@@ -7,7 +7,7 @@
 -- ============================================================
 -- CONFIG — เปลี่ยน URL นี้หลัง upload GitHub
 -- ============================================================
-local KEYS_URL  = "https://raw.githubusercontent.com/YOUR_NAME/YOUR_REPO/main/keys.txt"
+local KEYS_URL  = "https://raw.githubusercontent.com/boombadah/r1-scripts/refs/heads/main/R1_Cheat.lua"
 local CHEAT_VER = "v1.0"
 
 -- ============================================================
