@@ -1,0 +1,10 @@
+# Environment and internal agents
+.agents/
+roblox-executor-mcp/
+skills-lock.json
+
+# Scratch files
+*.py
+Kavo_raw.lua
+*.tmp
+*.log

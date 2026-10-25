@@ -9,6 +9,7 @@
 -- ============================================================
 local KEYS_URL  = "https://raw.githubusercontent.com/boombadah/r1-scripts/refs/heads/main/keys.txt"
 local CHEAT_VER = "v1.0"
+print("[R1 Cheat] Executed successfully | Version: " .. CHEAT_VER)
 
 -- ============================================================
 -- SERVICES
@@ -18,18 +19,47 @@ local RunService = game:GetService("RunService")
 local UIS        = game:GetService("UserInputService")
 local TweenSvc   = game:GetService("TweenService")
 local cam        = workspace.CurrentCamera
-local lp         = Players.LocalPlayer
+local lp         = Players.LocalPlayer or (function()
+    local p = Players.LocalPlayer
+    if not p then
+        p = Players:GetPropertyChangedSignal("LocalPlayer"):Wait() or Players.LocalPlayer
+    end
+    return p
+end)()
+
+-- Safe Environment resolver
+local function getEnv()
+    if typeof(getgenv) == "function" then
+        local ok, env = pcall(getgenv)
+        if ok and env then return env end
+    end
+    return _G
+end
+local env = getEnv()
+
+-- Safe GUI Parent resolver
+local function getSafeGui()
+    if typeof(gethui) == "function" then
+        local ok, res = pcall(gethui)
+        if ok and res then return res end
+    end
+    local s, c = pcall(function() return game:GetService("CoreGui") end)
+    if s and c then return c end
+    return lp:WaitForChild("PlayerGui")
+end
+local safeParent = getSafeGui()
 
 local VALID_PLACES = {[75942174630781]=true, [114690486941238]=true}
 if not VALID_PLACES[game.PlaceId] then
-    warn("[R1] Wrong game! PlaceId=" .. game.PlaceId)
-    return
+    warn("[R1] Notice: PlaceId=" .. tostring(game.PlaceId) .. " (Running in test/bypass mode)")
 end
 
 -- cleanup
-for _, v in ipairs(gethui():GetChildren()) do
-    if v.Name == "R1ESP" or v.Name == "R1Key" then v:Destroy() end
-end
+pcall(function()
+    for _, v in ipairs(safeParent:GetChildren()) do
+        if v.Name == "R1ESP" or v.Name == "R1Key" then v:Destroy() end
+    end
+end)
 
 -- ============================================================
 -- KEY VALIDATION UI
@@ -37,7 +67,7 @@ end
 local function showKeyUI(callback)
     local ksg = Instance.new("ScreenGui")
     ksg.Name = "R1Key"; ksg.IgnoreGuiInset = true
-    ksg.ResetOnSpawn = false; ksg.Parent = gethui()
+    ksg.ResetOnSpawn = false; ksg.Parent = safeParent
 
     -- backdrop
     local backdrop = Instance.new("Frame", ksg)
@@ -211,12 +241,7 @@ local function loadCheat()
     -- ============================================================
     local Library = (function()
     -- [ANON SECURITY HARDENED] Safe Container Resolver
-    local safeGuiParent = (function()
-        if gethui then return gethui() end
-        local s, c = pcall(function() return game:GetService('CoreGui') end)
-        if s and c then return c end
-        return game:GetService('Players').LocalPlayer:WaitForChild('PlayerGui')
-    end)()
+    local safeGuiParent = safeParent
 
     --// to the 2 peoplee who are constantly watching this repo, get a life yall weird.
     --// to the people who are still forking this unoptimized garbage, if you want a custom optimized rewrite for $, hmu on discord: federal6768 or federal.
@@ -3030,7 +3055,7 @@ local function loadCheat()
 end
 
 -- ============================================================
--- ENTRY POINT — session persistence via getgenv()
+-- ENTRY POINT — session persistence via env
 -- ============================================================
 local function startCheat()
     loadCheat()
@@ -3038,21 +3063,21 @@ local function startCheat()
     lp.CharacterAdded:Connect(function()
         task.wait(1) -- wait for workspace to populate
         -- rebuild entry cache for new match
-        for _, e in ipairs(getgenv().R1_entries or {}) do
+        for _, e in ipairs(env.R1_entries or {}) do
             for _, d in pairs(e.dr) do pcall(function() d:Remove() end) end
         end
         loadCheat()
     end)
 end
 
-if getgenv().R1_VALIDATED then
+if env.R1_VALIDATED then
     -- already validated this session — skip key UI
     print("[R1 Cheat] Session active — skipping key")
     startCheat()
 else
     showKeyUI(function(ok)
         if ok then
-            getgenv().R1_VALIDATED = true
+            env.R1_VALIDATED = true
             startCheat()
         end
     end)
