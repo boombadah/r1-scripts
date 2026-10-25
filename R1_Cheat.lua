@@ -1,15 +1,22 @@
 -- ============================================================
 --  R1 Battle Royale  |  ESP + No Recoil + Kavo Clean UI
---  Key System  |  F10 = toggle menu
+--  Keyless Edition  |  Auto-Teleport Reconnect  |  F10 = Menu
 --  ANON
 -- ============================================================
 
--- ============================================================
--- CONFIG — เปลี่ยน URL นี้หลัง upload GitHub
--- ============================================================
-local KEYS_URL  = "https://raw.githubusercontent.com/boombadah/r1-scripts/refs/heads/main/keys.txt"
-local CHEAT_VER = "v1.0"
+local CHEAT_VER = "v1.1 (Keyless)"
 print("[R1 Cheat] Executed successfully | Version: " .. CHEAT_VER)
+
+-- ============================================================
+-- AUTO TELEPORT RECONNECT (queue_on_teleport)
+-- ============================================================
+local queueTeleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
+if queueTeleport then
+    queueTeleport([[
+        task.wait(1)
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/boombadah/r1-scripts/main/R1_Cheat.lua?t=" .. tick()))()
+    ]])
+end
 
 -- ============================================================
 -- SERVICES
@@ -83,167 +90,7 @@ pcall(function()
 end)
 
 -- ============================================================
--- KEY VALIDATION UI
--- ============================================================
-local function showKeyUI(callback)
-    local ksg = Instance.new("ScreenGui")
-    ksg.Name = "R1Key"
-    ksg.IgnoreGuiInset = true
-    ksg.ResetOnSpawn = false
-    local okP = pcall(function() ksg.Parent = safeParent end)
-    if not okP or not ksg.Parent then
-        ksg.Parent = lp:WaitForChild("PlayerGui")
-    end
-
-    -- backdrop
-    local backdrop = Instance.new("Frame", ksg)
-    backdrop.Size = UDim2.new(1, 0, 1, 0)
-    backdrop.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    backdrop.BackgroundTransparency = 0.5
-    backdrop.BorderSizePixel = 0
-
-    -- card
-    local card = Instance.new("Frame", ksg)
-    card.Size = UDim2.new(0, 340, 0, 200)
-    card.Position = UDim2.new(0.5, -170, 0.5, -100)
-    card.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
-    card.BorderSizePixel = 0
-    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 12)
-    local cardStroke = Instance.new("UIStroke", card)
-    cardStroke.Color = Color3.fromRGB(220, 40, 40)
-    cardStroke.Thickness = 1.5
-
-    -- title
-    local hdr = Instance.new("Frame", card)
-    hdr.Size = UDim2.new(1, 0, 0, 42)
-    hdr.BackgroundColor3 = Color3.fromRGB(220, 40, 40)
-    hdr.BorderSizePixel = 0
-    Instance.new("UICorner", hdr).CornerRadius = UDim.new(0, 12)
-    local hdrFix = Instance.new("Frame", hdr)
-    hdrFix.Size = UDim2.new(1, 0, 0, 12); hdrFix.Position = UDim2.new(0, 0, 1, -12)
-    hdrFix.BackgroundColor3 = Color3.fromRGB(220, 40, 40); hdrFix.BorderSizePixel = 0
-    local hdrLbl = Instance.new("TextLabel", hdr)
-    hdrLbl.Size = UDim2.new(1, 0, 1, 0)
-    hdrLbl.BackgroundTransparency = 1
-    hdrLbl.Text = "  \xe2\x9a\xa1 R1 Cheat  " .. CHEAT_VER
-    hdrLbl.TextColor3 = Color3.new(1, 1, 1)
-    hdrLbl.Font = Enum.Font.GothamBold
-    hdrLbl.TextSize = 16
-    hdrLbl.TextXAlignment = Enum.TextXAlignment.Left
-
-    -- subtitle
-    local sub = Instance.new("TextLabel", card)
-    sub.Size = UDim2.new(1, -20, 0, 20)
-    sub.Position = UDim2.new(0, 10, 0, 50)
-    sub.BackgroundTransparency = 1
-    sub.Text = "Enter your key"
-    sub.TextColor3 = Color3.fromRGB(160, 160, 160)
-    sub.Font = Enum.Font.Gotham
-    sub.TextSize = 13
-
-    -- input box
-    local inputBG = Instance.new("Frame", card)
-    inputBG.Size = UDim2.new(1, -20, 0, 40)
-    inputBG.Position = UDim2.new(0, 10, 0, 76)
-    inputBG.BackgroundColor3 = Color3.fromRGB(22, 22, 32)
-    inputBG.BorderSizePixel = 0
-    Instance.new("UICorner", inputBG).CornerRadius = UDim.new(0, 8)
-    Instance.new("UIStroke", inputBG).Color = Color3.fromRGB(60, 60, 80)
-
-    local input = Instance.new("TextBox", inputBG)
-    input.Size = UDim2.new(1, -20, 1, 0)
-    input.Position = UDim2.new(0, 10, 0, 0)
-    input.BackgroundTransparency = 1
-    input.Text = ""
-    input.PlaceholderText = "R1-XXXX-XXXX"
-    input.PlaceholderColor3 = Color3.fromRGB(80, 80, 100)
-    input.TextColor3 = Color3.new(1, 1, 1)
-    input.Font = Enum.Font.GothamBold
-    input.TextSize = 15
-    input.ClearTextOnFocus = false
-
-    -- status label
-    local status = Instance.new("TextLabel", card)
-    status.Size = UDim2.new(1, -20, 0, 18)
-    status.Position = UDim2.new(0, 10, 0, 122)
-    status.BackgroundTransparency = 1
-    status.Text = ""
-    status.TextColor3 = Color3.fromRGB(255, 80, 80)
-    status.Font = Enum.Font.Gotham
-    status.TextSize = 12
-
-    -- confirm button
-    local btnBG = Instance.new("TextButton", card)
-    btnBG.Size = UDim2.new(1, -20, 0, 36)
-    btnBG.Position = UDim2.new(0, 10, 0, 148)
-    btnBG.BackgroundColor3 = Color3.fromRGB(220, 40, 40)
-    btnBG.BorderSizePixel = 0
-    btnBG.Text = "CONFIRM KEY"
-    btnBG.TextColor3 = Color3.new(1, 1, 1)
-    btnBG.Font = Enum.Font.GothamBold
-    btnBG.TextSize = 14
-    Instance.new("UICorner", btnBG).CornerRadius = UDim.new(0, 8)
-
-    -- hover effect
-    btnBG.MouseEnter:Connect(function()
-        TweenSvc:Create(btnBG, TweenInfo.new(0.1), {BackgroundColor3=Color3.fromRGB(255,60,60)}):Play()
-    end)
-    btnBG.MouseLeave:Connect(function()
-        TweenSvc:Create(btnBG, TweenInfo.new(0.1), {BackgroundColor3=Color3.fromRGB(220,40,40)}):Play()
-    end)
-
-    -- validate logic
-    local checking = false
-    local function validate()
-        if checking then return end
-        local key = input.Text:match("^%s*(.-)%s*$")
-        if key == "" then status.Text = "Key cannot be empty"; return end
-
-        checking = true
-        btnBG.Text = "Checking..."
-        status.Text = ""
-        status.TextColor3 = Color3.fromRGB(180, 180, 180)
-
-        -- fetch key list
-        local ok, raw = pcall(function() return game:HttpGet(KEYS_URL, true) end)
-        if not ok then
-            status.Text = "Failed to connect. Try again."
-            status.TextColor3 = Color3.fromRGB(255, 80, 80)
-            btnBG.Text = "CONFIRM KEY"
-            checking = false
-            return
-        end
-
-        -- parse & check
-        local valid = false
-        for line in raw:gmatch("[^\n\r]+") do
-            local trimmed = line:match("^%s*(.-)%s*$")
-            if trimmed ~= "" and trimmed:sub(1,1) ~= "#" and trimmed == key then
-                valid = true; break
-            end
-        end
-
-        if valid then
-            status.Text = "\xe2\x9c\x93 Key accepted! Loading..."
-            status.TextColor3 = Color3.fromRGB(0, 220, 80)
-            btnBG.Text = "CONFIRM KEY"
-            task.wait(0.8)
-            ksg:Destroy()
-            callback(true)
-        else
-            status.Text = "\xe2\x9c\x97 Invalid key"
-            status.TextColor3 = Color3.fromRGB(255, 80, 80)
-            btnBG.Text = "CONFIRM KEY"
-            checking = false
-        end
-    end
-
-    btnBG.MouseButton1Click:Connect(validate)
-    input.FocusLost:Connect(function(enter) if enter then validate() end end)
-end
-
--- ============================================================
--- MAIN CHEAT (runs after key validation)
+-- MAIN CHEAT (KEYLESS)
 -- ============================================================
 local function loadCheat()
     -- NO RECOIL
@@ -3100,17 +2947,7 @@ local function startCheat()
 end
 
 local okMain, errMain = pcall(function()
-    if env.R1_VALIDATED then
-        print("[R1 Cheat] Session active — skipping key")
-        startCheat()
-    else
-        showKeyUI(function(ok)
-            if ok then
-                env.R1_VALIDATED = true
-                startCheat()
-            end
-        end)
-    end
+    startCheat()
 end)
 
 if not okMain then
