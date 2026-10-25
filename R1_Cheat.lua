@@ -8,15 +8,8 @@ local CHEAT_VER = "v1.1 (Keyless)"
 print("[R1 Cheat] Executed successfully | Version: " .. CHEAT_VER)
 
 -- ============================================================
--- AUTO TELEPORT RECONNECT (queue_on_teleport)
+-- AUTO TELEPORT RECONNECT DISABLED (Manual execution only)
 -- ============================================================
-local queueTeleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
-if queueTeleport then
-    queueTeleport([[
-        task.wait(1)
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/boombadah/r1-scripts/main/R1_Cheat.lua?t=" .. tick()))()
-    ]])
-end
 
 -- ============================================================
 -- SERVICES
@@ -279,15 +272,29 @@ local function loadCheat()
     local LibName = "R1_Cheat_UI"
     local currentScreenGui = nil
     local currentMain = nil
+    local uiVisible = true
 
     function Kavo:ToggleUI()
-        if currentScreenGui then
-            currentScreenGui.Enabled = not currentScreenGui.Enabled
-            if currentMain then
-                currentMain.Visible = currentScreenGui.Enabled
-            end
-        elseif currentMain then
-            currentMain.Visible = not currentMain.Visible
+        uiVisible = not uiVisible
+        if currentMain then
+            currentMain.Visible = uiVisible
+        end
+        local pg = lp:FindFirstChildOfClass("PlayerGui")
+        local containers = {safeGuiParent}
+        if pg then table.insert(containers, pg) end
+        pcall(function()
+            local cg = game:GetService("CoreGui")
+            if cg then table.insert(containers, cg) end
+        end)
+        for _, c in ipairs(containers) do
+            pcall(function()
+                for _, g in ipairs(c:GetChildren()) do
+                    if g:IsA("ScreenGui") and (g.Name == "R1_Cheat_UI" or g:GetAttribute("R1_UI")) then
+                        local m = g:FindFirstChild("Main")
+                        if m then m.Visible = uiVisible end
+                    end
+                end
+            end)
         end
     end
 
@@ -373,6 +380,36 @@ local function loadCheat()
         ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         ScreenGui.ResetOnSpawn = false
 
+        -- Floating draggable toggle button on screen
+        local togglePill = Instance.new("TextButton")
+        local pillCorner = Instance.new("UICorner")
+        local pillStroke = Instance.new("UIStroke")
+
+        togglePill.Name = "R1_TogglePill"
+        togglePill.Parent = ScreenGui
+        togglePill.Size = UDim2.new(0, 72, 0, 26)
+        togglePill.Position = UDim2.new(0.012, 0, 0.15, 0)
+        togglePill.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
+        togglePill.Text = "⚡ R1 UI"
+        togglePill.TextColor3 = Color3.fromRGB(255, 255, 255)
+        togglePill.Font = Enum.Font.GothamBold
+        togglePill.TextSize = 12
+        togglePill.ZIndex = 9999
+        togglePill.AutoButtonColor = true
+
+        pillCorner.CornerRadius = UDim.new(0, 6)
+        pillCorner.Parent = togglePill
+
+        pillStroke.Color = Color3.fromRGB(230, 45, 45)
+        pillStroke.Thickness = 1.2
+        pillStroke.Parent = togglePill
+
+        Kavo:DraggingEnabled(togglePill, togglePill)
+
+        togglePill.MouseButton1Click:Connect(function()
+            Kavo:ToggleUI()
+        end)
+
         Main.Name = "Main"
         Main.Parent = ScreenGui
         Main.BackgroundColor3 = themeList.Background
@@ -425,16 +462,7 @@ local function loadCheat()
         close.ImageRectOffset = Vector2.new(284, 4)
         close.ImageRectSize = Vector2.new(24, 24)
         close.MouseButton1Click:Connect(function()
-            game.TweenService:Create(close, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
-                ImageTransparency = 1
-            }):Play()
-            task.wait()
-            game.TweenService:Create(Main, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-    			Size = UDim2.new(0,0,0,0),
-    			Position = UDim2.new(0, Main.AbsolutePosition.X + (Main.AbsoluteSize.X / 2), 0, Main.AbsolutePosition.Y + (Main.AbsoluteSize.Y / 2))
-    		}):Play()
-            task.wait(1)
-            ScreenGui:Destroy()
+            Kavo:ToggleUI()
         end)
 
         MainSide.Name = "MainSide"
@@ -2816,9 +2844,10 @@ local function loadCheat()
         Library:ToggleUI()
     end)
 
-    -- F10 hotkey fallback (unconditional so F10 toggles even when menu/game has input focus)
+    -- Multi-key hotkey fallback (supports F10, Insert, RightControl, RightShift)
     local f10Conn = UIS.InputBegan:Connect(function(i, gp)
-        if i.KeyCode == Enum.KeyCode.F10 then
+        local k = i.KeyCode
+        if k == Enum.KeyCode.F10 or k == Enum.KeyCode.Insert or k == Enum.KeyCode.RightControl or k == Enum.KeyCode.RightShift then
             Library:ToggleUI()
         end
     end)
