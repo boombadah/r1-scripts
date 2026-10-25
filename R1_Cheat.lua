@@ -2198,7 +2198,7 @@ local function loadCheat()
                     keybindElement.MouseButton1Click:connect(function(e) 
                         if not focusing then
                             togName_2.Text = ". . ."
-                            local a, b = game:GetService('UserInputService').InputBegan:task.wait();
+                            local a, b = game:GetService('UserInputService').InputBegan:Wait();
                             if a.KeyCode.Name ~= "Unknown" then
                                 togName_2.Text = a.KeyCode.Name
                                 oldKey = a.KeyCode.Name;
