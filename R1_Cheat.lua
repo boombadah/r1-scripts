@@ -19,13 +19,14 @@ local RunService = game:GetService("RunService")
 local UIS        = game:GetService("UserInputService")
 local TweenSvc   = game:GetService("TweenService")
 local cam        = workspace.CurrentCamera
-local lp         = Players.LocalPlayer or (function()
-    local p = Players.LocalPlayer
-    if not p then
-        p = Players:GetPropertyChangedSignal("LocalPlayer"):Wait() or Players.LocalPlayer
-    end
-    return p
-end)()
+
+local lp = Players.LocalPlayer
+if not lp then
+    repeat
+        task.wait(0.1)
+        lp = Players.LocalPlayer
+    until lp
+end
 
 -- Safe Environment resolver
 local function getEnv()
@@ -37,15 +38,35 @@ local function getEnv()
 end
 local env = getEnv()
 
--- Safe GUI Parent resolver
+-- Safe GUI Parent resolver (with write capability check)
 local function getSafeGui()
+    -- 1. gethui() (Executor hidden GUI)
     if typeof(gethui) == "function" then
         local ok, res = pcall(gethui)
-        if ok and res then return res end
+        if ok and res then
+            local canWrite = pcall(function()
+                local f = Instance.new("Folder")
+                f.Parent = res
+                f:Destroy()
+            end)
+            if canWrite then return res end
+        end
     end
-    local s, c = pcall(function() return game:GetService("CoreGui") end)
-    if s and c then return c end
-    return lp:WaitForChild("PlayerGui")
+
+    -- 2. CoreGui (test write capability)
+    local okCore, core = pcall(function() return game:GetService("CoreGui") end)
+    if okCore and core then
+        local canCore = pcall(function()
+            local f = Instance.new("Folder")
+            f.Parent = core
+            f:Destroy()
+        end)
+        if canCore then return core end
+    end
+
+    -- 3. PlayerGui (guaranteed writable by all clients)
+    local pg = lp:FindFirstChildOfClass("PlayerGui") or lp:WaitForChild("PlayerGui", 5)
+    return pg
 end
 local safeParent = getSafeGui()
 
@@ -66,8 +87,13 @@ end)
 -- ============================================================
 local function showKeyUI(callback)
     local ksg = Instance.new("ScreenGui")
-    ksg.Name = "R1Key"; ksg.IgnoreGuiInset = true
-    ksg.ResetOnSpawn = false; ksg.Parent = safeParent
+    ksg.Name = "R1Key"
+    ksg.IgnoreGuiInset = true
+    ksg.ResetOnSpawn = false
+    local okP = pcall(function() ksg.Parent = safeParent end)
+    if not okP or not ksg.Parent then
+        ksg.Parent = lp:WaitForChild("PlayerGui")
+    end
 
     -- backdrop
     local backdrop = Instance.new("Frame", ksg)
@@ -471,7 +497,10 @@ local function loadCheat()
         blurFrame.Size = UDim2.new(0, 376, 0, 289)
         blurFrame.ZIndex = 999
 
-        ScreenGui.Parent = safeGuiParent
+        local okP = pcall(function() ScreenGui.Parent = safeGuiParent end)
+        if not okP or not ScreenGui.Parent then
+            ScreenGui.Parent = lp:WaitForChild("PlayerGui")
+        end
         currentScreenGui = ScreenGui
         ScreenGui.Name = LibName
         ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -3070,15 +3099,20 @@ local function startCheat()
     end)
 end
 
-if env.R1_VALIDATED then
-    -- already validated this session — skip key UI
-    print("[R1 Cheat] Session active — skipping key")
-    startCheat()
-else
-    showKeyUI(function(ok)
-        if ok then
-            env.R1_VALIDATED = true
-            startCheat()
-        end
-    end)
+local okMain, errMain = pcall(function()
+    if env.R1_VALIDATED then
+        print("[R1 Cheat] Session active — skipping key")
+        startCheat()
+    else
+        showKeyUI(function(ok)
+            if ok then
+                env.R1_VALIDATED = true
+                startCheat()
+            end
+        end)
+    end
+end)
+
+if not okMain then
+    warn("[R1 Cheat Startup Error]: " .. tostring(errMain))
 end
