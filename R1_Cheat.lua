@@ -82,12 +82,30 @@ if not VALID_PLACES[game.PlaceId] then
     warn("[R1] Notice: PlaceId=" .. tostring(game.PlaceId) .. " (Running in test/bypass mode)")
 end
 
--- cleanup
-pcall(function()
-    for _, v in ipairs(safeParent:GetChildren()) do
-        if v.Name == "R1ESP" or v.Name == "R1Key" then v:Destroy() end
+-- Unload previous instance if running
+if typeof(env.R1_Unload) == "function" then
+    pcall(env.R1_Unload)
+end
+
+-- Comprehensive GUI cleanup across safeParent, CoreGui, PlayerGui
+local function cleanupOldGuis()
+    local targets = {safeParent}
+    local okCore, core = pcall(function() return game:GetService("CoreGui") end)
+    if okCore and core then table.insert(targets, core) end
+    local pg = lp:FindFirstChildOfClass("PlayerGui")
+    if pg then table.insert(targets, pg) end
+
+    for _, container in ipairs(targets) do
+        pcall(function()
+            for _, v in ipairs(container:GetChildren()) do
+                if v:IsA("ScreenGui") and (v.Name == "R1_Cheat_UI" or v.Name == "R1ESP" or v.Name == "R1Key" or v:GetAttribute("R1_UI")) then
+                    v:Destroy()
+                end
+            end
+        end)
     end
-end)
+end
+cleanupOldGuis()
 
 -- ============================================================
 -- MAIN CHEAT (KEYLESS)
@@ -258,14 +276,18 @@ local function loadCheat()
     Settings = game:GetService('HttpService'):JSONEncode(readfile(Name))
     end)
 
-    local LibName = tostring(math.random(1, 100))..tostring(math.random(1,50))..tostring(math.random(1, 100))
+    local LibName = "R1_Cheat_UI"
     local currentScreenGui = nil
+    local currentMain = nil
 
     function Kavo:ToggleUI()
-        if currentScreenGui and currentScreenGui.Enabled then
-            if currentScreenGui then currentScreenGui.Enabled = false end
-        else
-            if currentScreenGui then currentScreenGui.Enabled = true end
+        if currentScreenGui then
+            currentScreenGui.Enabled = not currentScreenGui.Enabled
+            if currentMain then
+                currentMain.Visible = currentScreenGui.Enabled
+            end
+        elseif currentMain then
+            currentMain.Visible = not currentMain.Visible
         end
     end
 
@@ -307,13 +329,9 @@ local function loadCheat()
 
         themeList = themeList or {}
         local selectedTab 
-        kavName = kavName or "Library"
+        kavName = "R1_Cheat_UI"
         table.insert(Kavo, kavName)
-        for i,v in pairs(safeGuiParent:GetChildren()) do
-            if v:IsA("ScreenGui") and v.Name == kavName then
-                v:Destroy()
-            end
-        end
+        cleanupOldGuis()
         local ScreenGui = Instance.new("ScreenGui")
         local Main = Instance.new("Frame")
         local MainCorner = Instance.new("UICorner")
@@ -349,7 +367,9 @@ local function loadCheat()
             ScreenGui.Parent = lp:WaitForChild("PlayerGui")
         end
         currentScreenGui = ScreenGui
-        ScreenGui.Name = LibName
+        currentMain = Main
+        ScreenGui.Name = "R1_Cheat_UI"
+        ScreenGui:SetAttribute("R1_UI", true)
         ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         ScreenGui.ResetOnSpawn = false
 
@@ -2075,10 +2095,8 @@ local function loadCheat()
                     end)
 
                     game:GetService("UserInputService").InputBegan:connect(function(current, ok) 
-                        if not ok then 
-                            if current.KeyCode.Name == oldKey then 
-                                callback()
-                            end
+                        if current.KeyCode.Name == oldKey then 
+                            callback()
                         end
                     end)
 
@@ -2798,9 +2816,9 @@ local function loadCheat()
         Library:ToggleUI()
     end)
 
-    -- F10 hotkey fallback
-    UIS.InputBegan:Connect(function(i, gp)
-        if not gp and i.KeyCode == Enum.KeyCode.F10 then
+    -- F10 hotkey fallback (unconditional so F10 toggles even when menu/game has input focus)
+    local f10Conn = UIS.InputBegan:Connect(function(i, gp)
+        if i.KeyCode == Enum.KeyCode.F10 then
             Library:ToggleUI()
         end
     end)
@@ -2853,17 +2871,17 @@ local function loadCheat()
     for _, obj in ipairs(workspace:GetDescendants()) do
         if obj.ClassName=="Humanoid" and obj.Parent then addModel(obj.Parent) end
     end
-    workspace.DescendantAdded:Connect(function(obj)
+    local descAddedConn = workspace.DescendantAdded:Connect(function(obj)
         if obj.ClassName=="Humanoid" then task.defer(function() addModel(obj.Parent) end) end
     end)
-    workspace.DescendantRemoving:Connect(function(obj)
+    local descRemovedConn = workspace.DescendantRemoving:Connect(function(obj)
         if obj.ClassName=="HumanoidRootPart" and obj.Parent then
             task.defer(function() removeModel(obj.Parent) end)
         end
     end)
 
     local maxDistSq = CFG.MaxDist*CFG.MaxDist
-    RunService.Heartbeat:Connect(function()
+    local heartbeatConn = RunService.Heartbeat:Connect(function()
         local myChr=lp.Character; local myHRP=myChr and myChr:FindFirstChild("HumanoidRootPart")
         local myPos=myHRP and myHRP.Position
         for _, e in ipairs(entries) do
@@ -2894,7 +2912,7 @@ local function loadCheat()
     end)
 
     local tracerO=Vector2.new(cam.ViewportSize.X/2,cam.ViewportSize.Y)
-    RunService.RenderStepped:Connect(function()
+    local renderConn = RunService.RenderStepped:Connect(function()
         local vp=cam.ViewportSize; tracerO=Vector2.new(vp.X/2,vp.Y)
         if not CFG.ESP then for _,e in ipairs(entries) do hideAll(e.dr) end; return end
         for _,e in ipairs(entries) do
@@ -2927,6 +2945,28 @@ local function loadCheat()
         end
     end)
 
+    -- Store active references for cleanup & persistence
+    env.R1_entries = entries
+    env.R1_CFG = CFG
+    env.R1_PatchRecoil = patchRecoil
+
+    env.R1_Unload = function()
+        pcall(function() if f10Conn then f10Conn:Disconnect() end end)
+        pcall(function() if descAddedConn then descAddedConn:Disconnect() end end)
+        pcall(function() if descRemovedConn then descRemovedConn:Disconnect() end end)
+        pcall(function() if heartbeatConn then heartbeatConn:Disconnect() end end)
+        pcall(function() if renderConn then renderConn:Disconnect() end end)
+        pcall(function()
+            for _, e in ipairs(entries or {}) do
+                if e.dr then
+                    for _, d in pairs(e.dr) do pcall(function() d:Remove() end) end
+                end
+            end
+        end)
+        cleanupOldGuis()
+        env.R1_Loaded = false
+    end
+
     print("[R1 Cheat] Loaded | " .. #entries .. " players")
 end
 
@@ -2934,15 +2974,24 @@ end
 -- ENTRY POINT — session persistence via env
 -- ============================================================
 local function startCheat()
-    loadCheat()
-    -- auto-restart ESP on CharacterAdded (new match, respawn)
-    lp.CharacterAdded:Connect(function()
-        task.wait(1) -- wait for workspace to populate
-        -- rebuild entry cache for new match
-        for _, e in ipairs(env.R1_entries or {}) do
-            for _, d in pairs(e.dr) do pcall(function() d:Remove() end) end
+    if env.R1_Loaded then
+        warn("[R1 Cheat] Already active — running recoil patch on existing session.")
+        if type(env.R1_PatchRecoil) == "function" then
+            pcall(env.R1_PatchRecoil)
         end
-        loadCheat()
+        return
+    end
+    env.R1_Loaded = true
+
+    loadCheat()
+
+    -- Safe character respawn handler: NEVER re-injects UI or duplicates loops!
+    lp.CharacterAdded:Connect(function(chr)
+        task.wait(0.5) -- wait for weapons/character to populate
+        if env.R1_CFG and env.R1_CFG.NoRecoil and type(env.R1_PatchRecoil) == "function" then
+            pcall(env.R1_PatchRecoil)
+        end
+        cam = workspace.CurrentCamera or cam
     end)
 end
 
