@@ -1,75 +1,72 @@
-# Tsukimi Yachiyo (月見ヤチヨ) Thai Voice Cloning Architecture & Dataset Manifest
+# Tsukimi Yachiyo (月見ヤチヨ) Thai Voice Cloning Architecture & Master Archive
 
-**Subject:** Thai Dubbed Vocal Vessel for No B  
-**Reference Source:** *[ 超かぐや姫 ] Into the Virtual Realm (Thai Dub.) – Cosmic Princess Kaguya | [ ฝึกพากย์ไทย ]【Letia】*  
-**Voice Actor:** Letia Ringrace (@Letiach.FIXIXVT)  
-**Separation Model:** UVR MDX-Net (`UVR-MDX-NET-Inst_HQ_3.onnx`)  
-**Hardware Engine:** NVIDIA GeForce RTX 4070 (12GB VRAM, Tensor Cores)  
-**Status:** 🚀 100% Fully Trained (150 Epochs / 600 Steps) & Live Operational on RTX 4070  
+**Subject:** Thai Dubbed Vocal Vessel & Dedicated Companion for dj  
+**Character Identity:** Tsukimi Yachiyo (月見ヤチヨ) / ยาจิ (Yachi)  
+**Primary Voice Engine:** ElevenLabs Multilingual v2 (Voice ID: `18BhVCU91jCP7h0IUa1K`)  
+**Secondary Local Engine:** Applio RVC v2 Master Model on NVIDIA GeForce RTX 4070 (12GB VRAM)  
+**Master Training Dataset:** 11 Expressive Sentences (87.01s pure studio-grade speech with anime emotions)  
 **Date Updated:** 2026-10-25  
-**One-Click Launcher:** `c:\Users\Boom\Desktop\คุยกับยาจิโยะ_Tsukimi_Yachiyo.bat`  
-**Speaker Script:** `c:\Users\Boom\Desktop\script\Script\yachiyo_speaker.py`  
 
 ---
 
-## 1. Pipeline Overview
+## 1. Active Voice Systems
 
-To achieve sub-second real-time conversational response with 100% natural Thai phrasing and Yachiyo's exact vocal timbre, we employ a **2-Stage Hybrid Neural Voice Engine**:
+### A. Primary Production Engine (ElevenLabs Multilingual v2)
+* **Launcher:** `c:\Users\Boom\Desktop\คุยกับยาจิโยะ_ElevenLabs.bat`
+* **Runner Script:** `c:\Users\Boom\Desktop\script\Script\elevenlabs_yachiyo_speaker.py`
+* **Voice ID:** `18BhVCU91jCP7h0IUa1K` (`yachiyo`)
+* **Tuned Parameters:**
+  * Model: `eleven_multilingual_v2`
+  * Stability: `0.72` (Locked against Thai foreign tone drift)
+  * Similarity Boost: `0.85` (Exact anime timbre recreation)
+  * Style: `0.08`
+  * Speaker Boost: `True`
+* **Expressive Audio Tags:** Fully supports inline emotion tags: `[giggles]`, `[laughs]`, `[sighs]`, `[yawns]`, `[gasps]`, `[whispers]`.
 
-```mermaid
-graph LR
-    A[No B Cognitive Text Response] --> B[Stage 1: Fast Thai Neural TTS]
-    B -->|Clean Thai Phoneme Stream .wav| C[Stage 2: RVC v2 Voice Conversion on RTX 4070]
-    C -->|Tsukimi Yachiyo Thai Dub Stream| D[Audio Playback & Companion Lip-Sync]
-    D --> E[dj Hears Yachiyo Speak Thai!]
-```
-
-| Pipeline Stage | Engine / Model | Latency | Role |
-|---|---|---|---|
-| **Stage 1: Phoneme Generation** | Microsoft Edge-TTS (`th-TH-PremwadeeNeural`) | ~120ms | Generates grammatically flawless, natural Thai cadence, tonal inflection, and timing without GPU load. |
-| **Stage 2: Timbre Morphing** | RVC v2 (Retrieval-based Voice Conversion) running on RTX 4070 | ~35ms | Converts vocal cords, formants, pitch range, and anime breathiness into Letia's Yachiyo character voice. |
-| **Stage 3: Lip-Sync Coupling** | Real-time FFT Audio Analyzer | ~5ms | Calculates mouth viseme weights (`A`, `I`, `U`, `E`, `O`) to drive the 3D VRM avatar's mouth simultaneously. |
+### B. Local Offline Engine (Applio RVC v2 on RTX 4070)
+* **Launcher:** `c:\Users\Boom\Desktop\คุยกับยาจิโยะ_Tsukimi_Yachiyo.bat`
+* **Runner Script:** `c:\Users\Boom\Desktop\script\Script\yachiyo_speaker.py`
+* **Checkpoint:** `D:\Hearth of noB\NoB_Vault\02_Arsenal_and_RE\Voice_Cloning\Applio\logs\Tsukimi_Yachiyo_Master\Tsukimi_Yachiyo_Master_250e_2000s.pth`
+* **Index:** `D:\Hearth of noB\NoB_Vault\02_Arsenal_and_RE\Voice_Cloning\Applio\logs\Tsukimi_Yachiyo_Master\Tsukimi_Yachiyo_Master.index`
+* **Training Stats:** 250 Epochs / 2,000 Steps on RTX 4070, Lowest Loss: 22.389.
 
 ---
 
-## 2. Dataset Manifest (44.00s Clean Speech)
+## 2. Master Dataset Manifest (87.01s Clean Audio)
 
-Extracted from `yachiyo_thai_fandub.wav` via AI Vocal Isolation (Zero BGM / Zero SFX):
-Location: `D:\Hearth of noB\NoB_Vault\02_Arsenal_and_RE\Voice_Cloning\Yachiyo_Thai_Letia\training_dataset\`
+Preserved permanently at:
+1. `C:\Users\Boom\Downloads\ไฟล์เสียง 11 ประโยค\` (`ประโยค1.mp3` - `ประโยค11.mp3`)
+2. `D:\Hearth of noB\NoB_Vault\02_Arsenal_and_RE\Voice_Cloning\Applio\datasets\Tsukimi_Yachiyo_Master\` (`master_01.wav` - `master_11.wav`, 48kHz Mono)
 
-| File Name | Duration | Description / Voice Register |
+| Clip | Duration | Transcript / Emotion Focus |
 |---|---|---|
-| `yachiyo_thai_seg_01.wav` | 2.10s | Greeting opening, soft tone |
-| `yachiyo_thai_seg_02.wav` | 3.50s | Explaining virtual realm, high pitch |
-| `yachiyo_thai_seg_03.wav` | 1.70s | Short affirmative sentence |
-| `yachiyo_thai_seg_04.wav` | 2.20s | Cheerful inflection |
-| `yachiyo_thai_seg_05.wav` | 2.30s | Playful question / bantering |
-| `yachiyo_thai_seg_06.wav` | 10.30s | Extended descriptive speech (Tsukuyomi introduction) |
-| `yachiyo_thai_seg_07.wav` | 2.10s | Energetic callout |
-| `yachiyo_thai_seg_08.wav` | 2.70s | Gentle guidance |
-| `yachiyo_thai_seg_09.wav` | 1.90s | Transition phrase |
-| `yachiyo_thai_seg_10.wav` | 5.60s | Emotional dialogue with anime breathiness |
-| `yachiyo_thai_seg_11.wav` | 2.60s | Mid-tempo dialogue |
-| `yachiyo_thai_seg_12.wav` | 1.60s | Short punchy response |
-| `yachiyo_thai_seg_13.wav` | 5.40s | Closing statement with warm resonance |
-
-**Total Pure Speech:** 44.00 seconds. Meets and exceeds the 30-second minimum threshold for high-accuracy RVC v2 voice model training.
+| `master_01.wav` | 7.47s | Greeting with bright opening inflection |
+| `master_02.wav` | 8.98s | Explaining technical systems / cheerful bantering |
+| `master_03.wav` | 7.89s | Playful laughter tag `[laughs]` |
+| `master_04.wav` | 7.89s | Soft giggles `[giggles]` and teasing tone |
+| `master_05.wav` | 9.17s | In-depth explanation with natural breathing |
+| `master_06.wav` | 8.12s | Sigh of relief `[sighs]` followed by warm reassurance |
+| `master_07.wav` | 9.48s | Encouragement and loyal companionship |
+| `master_08.wav` | 6.53s | Yawn `[yawns]` and late-night intimacy |
+| `master_09.wav` | 7.81s | Soft whispers `[whispers]` and close presence |
+| `master_10.wav` | 6.03s | Surprise / gasp `[gasps]` with cute high pitch |
+| `master_11.wav` | 7.63s | Affectionate sign-off and caring promise |
 
 ---
 
-## 3. RVC v2 Training & Execution Parameters
+## 3. Benchmark & Architectural Findings (October 2026)
 
-```ini
-[RVC_v2_Hyperparameters]
-Target_GPU = "NVIDIA GeForce RTX 4070"
-VRAM = "12GB"
-Sample_Rate = 48000
-Feature_Extractor = "ContentVec_256 (HuBERT-base)"
-Batch_Size = 8
-Total_Epochs = 200
-Save_Frequency = 50
-F0_Method = "RMVPE (Robust Model for Vocal Pitch Estimation)"
-Index_Algorithm = "IVF1024_Flat (FAISS)"
-Target_Checkpoint = "Tsukimi_Yachiyo_Thai_v1.pth"
-Index_File = "Tsukimi_Yachiyo_Thai_v1.index"
-```
+| Architecture | Quality & Naturalness | RTX 4070 Performance | Evaluation Finding |
+|---|---|---|---|
+| **ElevenLabs Multilingual v2** | **100% (SOTA World-Class)** | Cloud API (~1.2s) | **Winner:** Flawless human anime cadence, breathing, and emotional tags. |
+| **Applio RVC v2 Master (250e)** | **85-90%** (Timbre only) | 35ms / sentence | **Excellent Timbre:** Requires expressive base voice; Edge-TTS is too robotic. |
+| **Meta MMS VITS + RVC v2** | **75-80%** | ~12.9s / sentence | **Functional Local:** Clean 48kHz audio without distortion, but tone is formal. |
+| **F5-TTS Thai (Flow Matching)** | **30-40%** (Discarded) | ~8s / sentence | **Failed:** Vocoder creates severe phase distortion and muffled metallic grain. |
+| **Fish-Speech 1.5 Local** | **Unusable in Thai** (Discarded) | 137s (Looped) | **Failed:** Lacks Thai tokenization & EOS stopping token, causing endless loops. |
+
+---
+
+## 4. Operational Commitment
+* All experimental and temporary test files are sanitized.
+* Master audio clips and trained weights remain strictly safeguarded on host.
+* Companion identity locked: **ยาจิโยะ (ยาจิ)** responding to dj.
