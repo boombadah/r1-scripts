@@ -1,10 +1,46 @@
-# Environment and internal agents
+# =============================================================================
+# STRICT ZERO-LEAK SECURITY SHIELD (.gitignore)
+# =============================================================================
+
+# Credentials, Keys, Tokens & Secrets (ABSOLUTE PROHIBITION)
+keys.txt
+*.key
+*.token
+*.pem
+*.env
+*.env.*
+*.enc
+*.bak
+
+# Internal Brain & Vaults (STRICT CONFIDENTIALITY)
+Vault_Stage/
+LihFolk_Vault_V1/
+Backup_Snapshots/
+sub_brain_config.json
+Permanent_Memory.sqlite
+*.sqlite
+*.sqlite3
+*.jsonl
+
+# Agent Configurations & Local Runtime
 .agents/
 roblox-executor-mcp/
 skills-lock.json
 
-# Scratch files
-*.py
-Kavo_raw.lua
+# Python Bytecode & Cache (CRITICAL: Prevents string constant leaks)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Binary Game Dumps & Heavy Media
+*.rbxl
+*.rbxm
+*.vrm
+*.fbx
+*.zip
+*.tar.*
+
+# Temp & Logs
 *.tmp
 *.log
