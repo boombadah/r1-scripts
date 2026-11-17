@@ -10,14 +10,18 @@
         loadstring(game:HttpGet("https://raw.githubusercontent.com/boombadah/r1-scripts/main/Radar_v8/VoxelRadar_v8.lua"))()
 
     loader ตัวนี้เพิ่มให้:
-      * cache ลงเครื่อง (VXR8/cache.lua) — เน็ตหลุดก็ยังรันได้
-      * fallback ไป cache อัตโนมัติเมื่อโหลดไม่สำเร็จ
+      * โหลดจากเน็ตก่อนเสมอ (ได้เวอร์ชันล่าสุด) — 1-2 วินาที
+      * cache ลงเครื่อง (VXR8/cache.lua) ไว้ fallback เมื่อเน็ตหลุด
+      * getgenv().VXR_OFFLINE = true = บังคับใช้ cache (ไม่ยิงเน็ตเลย)
       * กัน http 200 ที่ได้ HTML (เช่นหน้า 404) ด้วยการเช็กขนาด/หัวไฟล์
     ==========================================================================]]
 
 local SRC_URL = "https://raw.githubusercontent.com/boombadah/r1-scripts/main/Radar_v8/VoxelRadar_v8.lua"
 local CACHE   = "VXR8/cache.lua"
-local FORCE   = (getgenv and getgenv().VXR_FORCE_UPDATE) == true
+
+-- ปกติจะโหลดจากเน็ตก่อนเสมอ (ได้เวอร์ชันล่าสุด) แล้วค่อย fallback ไป cache
+-- ถ้าอยากบังคับใช้ cache (เน็ตช้า/ออฟไลน์): getgenv().VXR_OFFLINE = true ก่อนเรียก loader
+local OFFLINE = (getgenv and getgenv().VXR_OFFLINE) == true
 
 local function hasFileApi()
 	return type(readfile) == "function" and type(writefile) == "function" and type(isfile) == "function"
@@ -46,7 +50,7 @@ end
 
 local src = nil
 
-if not FORCE then
+if OFFLINE then
 	src = readCache()
 end
 
