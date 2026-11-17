@@ -4,6 +4,16 @@
 
 **ไฟล์ที่ต้องรัน:** [`VoxelRadar_v8.lua`](VoxelRadar_v8.lua) (~129 KB)
 
+## รันผ่าน GitHub (บรรทัดเดียว)
+
+```lua
+loadstring(game:HttpGet("https://raw.githubusercontent.com/boombadah/r1-scripts/main/Radar_v8/loader.lua"))()
+```
+
+`loader.lua` จะดาวน์โหลด engine แล้วแคชไว้ที่ `VXR8/cache.lua` — เน็ตหลุดก็ยังรันตัวเก่าได้
+บังคับอัปเดต: `getgenv().VXR_FORCE_UPDATE = true` ก่อนเรียก loader
+หรือโหลดตัว engine ตรง ๆ (ไม่มี cache): `.../Radar_v8/VoxelRadar_v8.lua`
+
 ---
 
 ## ของใหม่ใน v8.1
