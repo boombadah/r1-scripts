@@ -1,0 +1,49 @@
+base: roblox
+globals:
+  getgenv:
+    any: true
+  gethui:
+    any: true
+  get_hidden_gui:
+    any: true
+  protectgui:
+    any: true
+  protect_gui:
+    any: true
+  syn:
+    any: true
+  Drawing:
+    any: true
+  mousemoverel:
+    any: true
+  writefile:
+    any: true
+  readfile:
+    any: true
+  isfile:
+    any: true
+  isfolder:
+    any: true
+  makefolder:
+    any: true
+  loadstring:
+    any: true
+  setthreadidentity:
+    any: true
+  getconnections:
+    any: true
+  hookfunction:
+    any: true
+  firetouchinterest:
+    any: true
+  cloneref:
+    any: true
+  identifyexecutor:
+    any: true
+  setclipboard:
+    any: true
+  request:
+    any: true
+  typeof:
+    any: true
+
